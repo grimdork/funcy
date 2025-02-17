@@ -18,14 +18,14 @@ func (c *Client) GetFile(fn string) []byte {
 	})
 
 	if err != nil {
-		c.w.Write([]byte(err.Error() + "\n"))
+		c.Write(err.Error() + "\n")
 		return nil
 	}
 
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		c.w.Write([]byte(err.Error() + "\n"))
+		c.Write(err.Error() + "\n")
 		return nil
 	}
 
@@ -41,7 +41,7 @@ func (c *Client) PutFile(fn string, data []byte) {
 	})
 
 	if err != nil {
-		c.w.Write([]byte(err.Error() + "\n"))
+		c.Write(err.Error() + "\n")
 		return
 	}
 }
