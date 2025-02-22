@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -56,4 +57,14 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 
 	cl.Conn = conn
 	return cl
+}
+
+// SetCookie in HTTP response.
+func (cl *Client) SetCookie(name, value string) {
+	http.SetCookie(cl.W, &http.Cookie{
+		Name:    name,
+		Value:   value,
+		Path:    "/",
+		Expires: time.Now().Add(time.Hour),
+	})
 }
