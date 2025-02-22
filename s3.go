@@ -11,21 +11,21 @@ import (
 )
 
 // GetFile from storage.
-func (c *Client) GetFile(fn string) []byte {
-	res, err := c.GetObject(context.Background(), &s3.GetObjectInput{
+func (cl *Client) GetFile(fn string) []byte {
+	res, err := cl.GetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(os.Getenv("BUCKET")),
 		Key:    aws.String(fn),
 	})
 
 	if err != nil {
-		c.Write(err.Error() + "\n")
+		cl.Write(err.Error() + "\n")
 		return nil
 	}
 
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		c.Write(err.Error() + "\n")
+		cl.Write(err.Error() + "\n")
 		return nil
 	}
 
@@ -33,15 +33,15 @@ func (c *Client) GetFile(fn string) []byte {
 }
 
 // PutFile to storage.
-func (c *Client) PutFile(fn string, data []byte) {
-	_, err := c.PutObject(context.Background(), &s3.PutObjectInput{
+func (cl *Client) PutFile(fn string, data []byte) {
+	_, err := cl.PutObject(context.Background(), &s3.PutObjectInput{
 		Bucket: aws.String(os.Getenv("BUCKET")),
 		Key:    aws.String(fn),
 		Body:   bytes.NewReader(data),
 	})
 
 	if err != nil {
-		c.Write(err.Error() + "\n")
+		cl.Write(err.Error() + "\n")
 		return
 	}
 }
