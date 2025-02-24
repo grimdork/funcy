@@ -68,3 +68,11 @@ func (cl *Client) SetCookie(name, value string) {
 		Expires: time.Now().Add(time.Hour),
 	})
 }
+
+// ClearCookie in HTTP response.
+func (cl *Client) ClearCookie(name string) {
+	http.SetCookie(cl.W, &http.Cookie{
+		Name:    name,
+		Expires: time.Now().Add(-1 * time.Hour),
+	})
+}
