@@ -73,6 +73,8 @@ func (cl *Client) SetCookie(name, value string) {
 func (cl *Client) ClearCookie(name string) {
 	http.SetCookie(cl.W, &http.Cookie{
 		Name:    name,
+		Value:   "",
+		MaxAge:  -1,
 		Expires: time.Now().Add(-1 * time.Hour),
 	})
 }
