@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	ll "github.com/grimdork/loglines"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -51,7 +52,7 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 
 	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE"))
 	if err != nil {
-		cl.Write(err.Error())
+		ll.Msg("Error connecting to database: %s", err.Error())
 		return nil
 	}
 
