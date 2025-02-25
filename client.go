@@ -16,7 +16,7 @@ type Client struct {
 	// Client for S3 operations.
 	*s3.Client
 	// W is the HTTP response writer.
-	W *http.ResponseWriter
+	W http.ResponseWriter
 	// R is the HTTP request.
 	R *http.Request
 	// Conn is the PostgreSQL connection.
@@ -29,7 +29,7 @@ type Client struct {
 
 // Write string to HTTP.
 func (cl *Client) Write(s string) {
-	(*cl.W).Write([]byte(s))
+	cl.W.Write([]byte(s))
 }
 
 // NewClient creates a client.
@@ -44,7 +44,7 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 
 	cl := &Client{}
 	cl.Client = s3.NewFromConfig(s3cfg)
-	cl.W = &w
+	cl.W = w
 	cl.R = r
 	cl.Username = r.URL.Query().Get("username")
 	cl.Token = r.URL.Query().Get("token")
@@ -61,7 +61,7 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 
 // SetCookie in HTTP response.
 func (cl *Client) SetCookie(name, value string) {
-	http.SetCookie(*cl.W, &http.Cookie{
+	http.SetCookie(cl.W, &http.Cookie{
 		Name:     name,
 		Value:    value,
 		MaxAge:   3600,
@@ -75,7 +75,7 @@ func (cl *Client) SetCookie(name, value string) {
 
 // ClearCookie in HTTP response.
 func (cl *Client) ClearCookie(name string) {
-	http.SetCookie(*cl.W, &http.Cookie{
+	http.SetCookie(cl.W, &http.Cookie{
 		Name:     name,
 		Value:    "",
 		MaxAge:   -1,
@@ -89,7 +89,7 @@ func (cl *Client) ClearCookie(name string) {
 
 // Flush the HTTP response.
 func (cl *Client) Flush() {
-	if flusher, ok := (*cl.W).(http.Flusher); ok {
+	if flusher, ok := cl.W.(http.Flusher); ok {
 		flusher.Flush()
 	}
 }
