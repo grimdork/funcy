@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/gorilla/sessions"
 	ll "github.com/grimdork/loglines"
 	"github.com/jackc/pgx/v5"
 )
@@ -19,12 +20,12 @@ type Client struct {
 	W http.ResponseWriter
 	// R is the HTTP request.
 	R *http.Request
+	// Store is the session store.
+	Store *sessions.CookieStore
+	// Session for this client.
+	Session *sessions.Session
 	// Conn is the PostgreSQL connection.
 	Conn *pgx.Conn
-	// Username is used to verify the token.
-	Username string
-	// Token is used to check if authenticated.
-	Token string
 }
 
 // Write string to HTTP.
@@ -34,20 +35,20 @@ func (cl *Client) Write(s string) {
 
 // NewClient creates a client.
 func NewClient(w http.ResponseWriter, r *http.Request) *Client {
-	s3cfg, err := config.LoadDefaultConfig(
-		context.TODO(),
-		config.WithRegion(os.Getenv("REGION")),
-	)
-	if err != nil {
-		return nil
-	}
-
 	cl := &Client{}
-	cl.Client = s3.NewFromConfig(s3cfg)
 	cl.W = w
 	cl.R = r
-	cl.Username = r.URL.Query().Get("username")
-	cl.Token = r.URL.Query().Get("token")
+	cl.Store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+	cl.Store.Options = &sessions.Options{
+		Path:     "/",
+		Domain:   os.Getenv("DOMAIN"),
+		MaxAge:   86400,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	session, err := cl.Store.Get(cl.R, "grimdork-session")
+	cl.Session = session
 
 	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE"))
 	if err != nil {
@@ -56,40 +57,31 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 	}
 
 	cl.Conn = conn
+	s3cfg, err := config.LoadDefaultConfig(
+		context.TODO(),
+		config.WithRegion(os.Getenv("REGION")),
+	)
+	if err != nil {
+		return nil
+	}
+
+	cl.Client = s3.NewFromConfig(s3cfg)
 	return cl
 }
 
 // SetCookie in HTTP response.
 func (cl *Client) SetCookie(name, value string) {
-	http.SetCookie(cl.W, &http.Cookie{
-		Name:     name,
-		Value:    value,
-		MaxAge:   3600,
-		Path:     "/",
-		Domain:   os.Getenv("DOMAIN"),
-		SameSite: http.SameSiteLaxMode,
-		HttpOnly: true,
-		Secure:   true,
-	})
+	cl.Session.Values[name] = value
+	cl.Save()
 }
 
 // ClearCookie in HTTP response.
 func (cl *Client) ClearCookie(name string) {
-	http.SetCookie(cl.W, &http.Cookie{
-		Name:     name,
-		Value:    "",
-		MaxAge:   -1,
-		Path:     "/",
-		Domain:   os.Getenv("DOMAIN"),
-		SameSite: http.SameSiteLaxMode,
-		HttpOnly: true,
-		Secure:   true,
-	})
+	delete(cl.Session.Values, name)
+	cl.Session.Save(cl.R, cl.W)
 }
 
-// Flush the HTTP response.
-func (cl *Client) Flush() {
-	if flusher, ok := cl.W.(http.Flusher); ok {
-		flusher.Flush()
-	}
+// Save session.
+func (cl *Client) Save() {
+	cl.Session.Save(cl.R, cl.W)
 }
