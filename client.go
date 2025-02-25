@@ -72,13 +72,11 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 // SetCookie in HTTP response.
 func (cl *Client) SetCookie(name, value string) {
 	cl.Session.Values[name] = value
-	cl.Save()
 }
 
 // ClearCookie in HTTP response.
 func (cl *Client) ClearCookie(name string) {
 	delete(cl.Session.Values, name)
-	cl.Session.Save(cl.R, cl.W)
 }
 
 // Save session.
