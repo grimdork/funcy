@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -69,18 +68,20 @@ func (cl *Client) SetCookie(name, value string) {
 		Domain:   os.Getenv("DOMAIN"),
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   3600,
-		Secure:   true,
 		HttpOnly: true,
+		Secure:   true,
 	})
 }
 
 // ClearCookie in HTTP response.
 func (cl *Client) ClearCookie(name string) {
 	http.SetCookie(*cl.W, &http.Cookie{
-		Name:    name,
-		Value:   "",
-		MaxAge:  -1,
-		Expires: time.Now().Add(-1 * time.Hour),
+		Name:     name,
+		Value:    "",
+		MaxAge:   -1,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
 	})
 }
 
