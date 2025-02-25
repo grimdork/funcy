@@ -64,10 +64,10 @@ func (cl *Client) SetCookie(name, value string) {
 	http.SetCookie(*cl.W, &http.Cookie{
 		Name:     name,
 		Value:    value,
+		MaxAge:   3600,
 		Path:     "/",
 		Domain:   os.Getenv("DOMAIN"),
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   3600,
 		HttpOnly: true,
 		Secure:   true,
 	})
@@ -80,6 +80,8 @@ func (cl *Client) ClearCookie(name string) {
 		Value:    "",
 		MaxAge:   -1,
 		Path:     "/",
+		Domain:   os.Getenv("DOMAIN"),
+		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
 		Secure:   true,
 	})
