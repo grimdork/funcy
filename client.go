@@ -68,18 +68,3 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 	cl.Client = s3.NewFromConfig(s3cfg)
 	return cl
 }
-
-// SetCookie in HTTP response.
-func (cl *Client) SetCookie(name, value string) {
-	cl.Session.Values[name] = value
-}
-
-// ClearCookie in HTTP response.
-func (cl *Client) ClearCookie(name string) {
-	delete(cl.Session.Values, name)
-}
-
-// Save session.
-func (cl *Client) Save() {
-	cl.Session.Save(cl.R, cl.W)
-}
