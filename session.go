@@ -23,8 +23,8 @@ func (cl *Client) GetCookie(name string) string {
 }
 
 // Save session.
-func (cl *Client) Save() {
-	cl.Session.Save(cl.R, cl.W)
+func (cl *Client) Save() error {
+	return cl.Session.Save(cl.R, cl.W)
 }
 
 // SetHeader in HTTP response.

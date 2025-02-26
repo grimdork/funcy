@@ -35,10 +35,11 @@ func (cl *Client) Write(s string) {
 
 // NewClient creates a client.
 func NewClient(w http.ResponseWriter, r *http.Request) *Client {
-	cl := &Client{}
-	cl.W = w
-	cl.R = r
-	cl.Store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+	cl := &Client{
+		W:     w,
+		R:     r,
+		Store: sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY"))),
+	}
 	cl.Store.Options = &sessions.Options{
 		Path:     "/",
 		Domain:   os.Getenv("DOMAIN"),
@@ -53,7 +54,11 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 		return nil
 	}
 	cl.Session = session
-	cl.Save()
+	err = cl.Save()
+	if err != nil {
+		ll.Msg("Error saving session: %s", err.Error())
+		return nil
+	}
 
 	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE"))
 	if err != nil {
