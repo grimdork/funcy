@@ -40,6 +40,7 @@ func (cl *Client) Authenticate(username, password string) bool {
 	token := GenerateToken(username)
 	cl.SetCookie("token", token)
 	cl.Save()
+	cl.admin = true
 	_, err = cl.Conn.Exec(context.Background(), insertSessionSQL, username, token)
 	if err != nil {
 		cl.SetCookie("message", "Failed to create session: "+err.Error())
@@ -74,7 +75,12 @@ func (cl *Client) IsAuthenticated() bool {
 }
 
 // IsAdmin checks if the user is an admin.
-func (cl *Client) IsAdmin(username string) bool {
+func (cl *Client) IsAdmin() bool {
+	return cl.admin
+}
+
+// CheckAdmin checks if a user is an admin.
+func (cl *Client) CheckAdmin(username string) bool {
 	if username == "" {
 		return false
 	}

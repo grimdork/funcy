@@ -25,7 +25,8 @@ type Client struct {
 	// Session for this client.
 	Session *sessions.Session
 	// Conn is the PostgreSQL connection.
-	Conn *pgx.Conn
+	Conn  *pgx.Conn
+	admin bool
 }
 
 // Write string to HTTP.
