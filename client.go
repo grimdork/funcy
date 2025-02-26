@@ -48,6 +48,10 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 		SameSite: http.SameSiteLaxMode,
 	}
 	session, err := cl.Store.Get(cl.R, "grimdork-session")
+	if err != nil {
+		ll.Msg("Error getting session: %s", err.Error())
+		return nil
+	}
 	cl.Session = session
 
 	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE"))
