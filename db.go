@@ -23,6 +23,7 @@ func (cl *Client) Authenticate(username, password string) bool {
 	err := cl.Conn.QueryRow(context.Background(), getPasswordSQL, username).Scan(&hashedPassword)
 	if err != nil {
 		cl.SetCookie("message", "Invalid credentials.")
+		cl.Save()
 		ll.Msg("failed to get password: %s", err.Error())
 		return false
 	}
@@ -30,6 +31,7 @@ func (cl *Client) Authenticate(username, password string) bool {
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
 		cl.SetCookie("message", "Invalid credentials.")
+		cl.Save()
 		ll.Msg("passwords do not match: %s", err.Error())
 		return false
 	}
@@ -41,6 +43,7 @@ func (cl *Client) Authenticate(username, password string) bool {
 	_, err = cl.Conn.Exec(context.Background(), insertSessionSQL, username, token)
 	if err != nil {
 		cl.SetCookie("message", "Failed to create session: "+err.Error())
+		cl.Save()
 		ll.Msg("failed to create session: %s", err.Error())
 		return false
 	}

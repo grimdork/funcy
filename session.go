@@ -1,5 +1,7 @@
 package funcy
 
+import "net/http"
+
 // SetCookie in HTTP response.
 func (cl *Client) SetCookie(name, value string) {
 	cl.Session.Values[name] = value
@@ -26,4 +28,9 @@ func (cl *Client) Save() {
 // SetHeader in HTTP response.
 func (cl *Client) SetHeader(name, value string) {
 	cl.W.Header().Set(name, value)
+}
+
+// Redirect to URL.
+func (cl *Client) Redirect(url string, code int) {
+	http.Redirect(cl.W, cl.R, url, code)
 }
