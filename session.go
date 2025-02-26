@@ -5,11 +5,13 @@ import "net/http"
 // SetCookie in HTTP response.
 func (cl *Client) SetCookie(name, value string) {
 	cl.Session.Values[name] = value
+	cl.Save()
 }
 
 // ClearCookie in HTTP response.
 func (cl *Client) ClearCookie(name string) {
 	delete(cl.Session.Values, name)
+	cl.Save()
 }
 
 // GetCookie from HTTP request.

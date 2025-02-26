@@ -53,6 +53,7 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 		return nil
 	}
 	cl.Session = session
+	cl.Save()
 
 	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE"))
 	if err != nil {
