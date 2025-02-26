@@ -1,30 +1,46 @@
 package funcy
 
-import "net/http"
+import (
+	"net/http"
+	"os"
+)
 
 // SetCookie in HTTP response.
 func (cl *Client) SetCookie(name, value string) {
-	cl.Session.Values[name] = value
-	cl.Save()
+	http.SetCookie(cl.W, &http.Cookie{
+		Name:     name,
+		Value:    value,
+		Path:     "/",
+		Domain:   os.Getenv("DOMAIN"),
+		MaxAge:   86400,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
 }
 
 // ClearCookie in HTTP response.
 func (cl *Client) ClearCookie(name string) {
-	delete(cl.Session.Values, name)
-	cl.Save()
+	http.SetCookie(cl.W, &http.Cookie{
+		Name:     name,
+		Value:    "",
+		Path:     "/",
+		Domain:   os.Getenv("DOMAIN"),
+		MaxAge:   -1,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
 }
 
 // GetCookie from HTTP request.
 func (cl *Client) GetCookie(name string) string {
-	if val, ok := cl.Session.Values[name].(string); ok {
-		return val
+	cookie, err := cl.R.Cookie(name)
+	if err == nil {
+		return cookie.Value
 	}
-	return ""
-}
 
-// Save session.
-func (cl *Client) Save() error {
-	return cl.Session.Save(cl.R, cl.W)
+	return ""
 }
 
 // SetHeader in HTTP response.

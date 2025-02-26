@@ -35,7 +35,6 @@ func (cl *Client) Authenticate(username, password string) bool {
 	cl.SetCookie("username", username)
 	token := GenerateToken(username)
 	cl.SetCookie("token", token)
-	cl.Save()
 	_, err = cl.Conn.Exec(context.Background(), insertSessionSQL, username, token)
 	if err != nil {
 		ll.Msg("Failed to create session: %s", err.Error())
