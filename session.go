@@ -22,3 +22,8 @@ func (cl *Client) GetCookie(name string) string {
 func (cl *Client) Save() {
 	cl.Session.Save(cl.R, cl.W)
 }
+
+// SetHeader in HTTP response.
+func (cl *Client) SetHeader(name, value string) {
+	cl.W.Header().Set(name, value)
+}
