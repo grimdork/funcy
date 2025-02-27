@@ -9,20 +9,44 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const getPasswordSQL = `select password from users where name = $1 and admin = true;`
-const insertSessionSQL = `insert into sessions (user_id, token, expires_at)
+const (
+	userSessions = "sessions"
+	adminSessons = "admin_sessions"
+
+	getPasswordSQL      = `select password from users where name = $1;`
+	getAdminPasswordSQL = `select password from users where name = $1 and admin = true;`
+	insertSessionSQL    = `insert into sessions (user_id, token, expires_at)
+select id, $2, now() + interval '1 day'
+from users where name = $1;
+`
+	insertAdminSessionSQL = `insert into admin_sessions (user_id, token, expires_at)
 select id, $2, now() + interval '1 hour'
 from users where name = $1;
 `
+	validateSessionSQL = `select 1 from sessions s
+join users u on s.user_id = u.id
+where u.name = $1 and s.token = $2 and s.expires_at > now();
+`
+	validateAdminSessionSQL = `select 1 from admin_sessions s
+join users u on s.user_id = u.id
+where u.name = $1 and u.admin = true and s.token = $2 and s.expires_at > now();
+`
+	invalidateUserSessionsSQL  = `delete from sessions where user_id = (select id from users where name = $1);`
+	invalidateAdminSessionsSQL = `delete from admin_sessions where user_id = (select id from users where name = $1);`
+)
 
 // Authenticate checks the user's password and updates the session if valid, and the user is an admin.
-func (cl *Client) Authenticate(username, password string) bool {
+func (cl *Client) Authenticate(username, password string, asAdmin bool) bool {
 	if username == "" || password == "" {
 		return false
 	}
 
 	var hashedPassword string
-	err := cl.Conn.QueryRow(context.Background(), getPasswordSQL, username).Scan(&hashedPassword)
+	sql := getPasswordSQL
+	if asAdmin {
+		sql = getAdminPasswordSQL
+	}
+	err := cl.Conn.QueryRow(context.Background(), sql, username).Scan(&hashedPassword)
 	if err != nil {
 		ll.Msg("Failed to get password: %s", err.Error())
 		return false
@@ -37,7 +61,11 @@ func (cl *Client) Authenticate(username, password string) bool {
 	cl.SetCookie("username", username)
 	token := GenerateToken(username)
 	cl.SetCookie("token", token)
-	_, err = cl.Conn.Exec(context.Background(), insertSessionSQL, username, token)
+	sql = insertSessionSQL
+	if asAdmin {
+		sql = insertAdminSessionSQL
+	}
+	_, err = cl.Conn.Exec(context.Background(), sql, username, token)
 	if err != nil {
 		ll.Msg("Failed to create session: %s", err.Error())
 		return false
@@ -46,21 +74,20 @@ func (cl *Client) Authenticate(username, password string) bool {
 	return true
 }
 
-const validateSessionSQL = `select 1 from sessions s
-join users u on s.user_id = u.id
-where u.name = $1 and u.admin = true and s.token = $2 and s.expires_at > now();
-`
-
 // IsAuthenticated checks if the user is logged in.
-func (cl *Client) IsAuthenticated() bool {
+func (cl *Client) IsAuthenticated(asAdmin bool) bool {
 	username := cl.GetCookie("username")
 	token := cl.GetCookie("token")
 	if username == "" || token == "" {
 		return false
 	}
 
+	sql := validateSessionSQL
+	if asAdmin {
+		sql = validateAdminSessionSQL
+	}
 	var valid int
-	err := cl.Conn.QueryRow(context.Background(), validateSessionSQL, username, token).Scan(&valid)
+	err := cl.Conn.QueryRow(context.Background(), sql, username, token).Scan(&valid)
 	if err != nil && valid != 1 {
 		return false
 	}
@@ -86,6 +113,22 @@ func (cl *Client) CheckAdmin(username string) bool {
 	}
 
 	return admin
+}
+
+// InvalidateSessions removes all sessions for a user.
+func (cl *Client) InvalidateSessions(username string) {
+	_, err := cl.Conn.Exec(context.Background(), invalidateUserSessionsSQL, username)
+	if err != nil {
+		ll.Msg("Failed to invalidate user sessions: %s", err.Error())
+	}
+}
+
+// InvalidateAdminSessions removes all admin sessions for a user.
+func (cl *Client) InvalidateAdminSessions(username string) {
+	_, err := cl.Conn.Exec(context.Background(), invalidateAdminSessionsSQL, username)
+	if err != nil {
+		ll.Msg("Failed to invalidate admin sessions: %s", err.Error())
+	}
 }
 
 // SetCookie in HTTP response.
@@ -116,7 +159,7 @@ func (cl *Client) ClearCookie(name string) {
 	})
 }
 
-// ClearSession removes the session cookies.
+// ClearSession removes the session cookies of the current user.
 func (cl *Client) ClearSession() {
 	cl.ClearCookie("username")
 	cl.ClearCookie("token")
