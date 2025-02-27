@@ -88,7 +88,7 @@ func (cl *Client) IsAuthenticated(asAdmin bool) bool {
 	}
 	var valid int
 	err := cl.Conn.QueryRow(context.Background(), sql, username, token).Scan(&valid)
-	if err != nil && valid != 1 {
+	if err != nil || valid != 1 {
 		return false
 	}
 
