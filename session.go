@@ -116,6 +116,12 @@ func (cl *Client) ClearCookie(name string) {
 	})
 }
 
+// ClearSession removes the session cookies.
+func (cl *Client) ClearSession() {
+	cl.ClearCookie("username")
+	cl.ClearCookie("token")
+}
+
 // GetCookie from HTTP request.
 func (cl *Client) GetCookie(name string) string {
 	cookie, err := cl.R.Cookie(name)
