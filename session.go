@@ -20,7 +20,7 @@ select id, $2, now() + interval '1 day'
 from users where name = $1;
 `
 	insertAdminSessionSQL = `insert into admin_sessions (user_id, token, expires_at)
-select id, $2, now() + interval '1 hour'
+select id, $2, now() + interval '1 day'
 from users where name = $1;
 `
 	validateSessionSQL = `select 1 from sessions s
