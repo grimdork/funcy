@@ -33,8 +33,7 @@ const errorTemplate = `<!DOCTYPE html>
 func (cl *Client) LoadTemplate(fn string, data any) []byte {
 	base := filepath.Base(fn)
 	name := strings.TrimSuffix(base, filepath.Ext(base))
-	input := cl.GetFile(fn)
-	tpl, err := template.New(name).Parse(string(input))
+	tpl, err := template.New(name).Parse(string(cl.GetFile(fn)))
 	if err != nil {
 		return []byte(errorTemplate)
 	}
@@ -43,6 +42,26 @@ func (cl *Client) LoadTemplate(fn string, data any) []byte {
 	err = tpl.Execute(&buf, data)
 	if err != nil {
 		return []byte(errorTemplate)
+	}
+
+	return buf.Bytes()
+}
+
+// LoadTemplates from S3 storage.
+func (cl *Client) LoadTemplates(files []string, data any) []byte {
+	var buf bytes.Buffer
+	for _, fn := range files {
+		base := filepath.Base(fn)
+		name := strings.TrimSuffix(base, filepath.Ext(base))
+		tpl, err := template.New(name).Parse(string(cl.GetFile(fn)))
+		if err != nil {
+			return []byte(errorTemplate)
+		}
+
+		err = tpl.Execute(&buf, data)
+		if err != nil {
+			return []byte(errorTemplate)
+		}
 	}
 
 	return buf.Bytes()
