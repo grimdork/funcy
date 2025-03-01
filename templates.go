@@ -17,7 +17,7 @@ const errorTemplate = `<!DOCTYPE html>
 <body>
 	<script>
 		setTimeout(function() {
-			window.location.href = "/login";
+			window.location.href = "/";
 		}, 3000);
 	</script>
 
