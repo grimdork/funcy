@@ -92,6 +92,11 @@ func (cl *Client) IsAuthenticated(asAdmin bool) bool {
 		return false
 	}
 
+	if asAdmin {
+		cl.UpdateAdminSession(username)
+	} else {
+		cl.UpdateSession(username)
+	}
 	return true
 }
 
