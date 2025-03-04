@@ -184,3 +184,23 @@ func (cl *Client) SetHeader(name, value string) {
 func (cl *Client) Redirect(url string, code int) {
 	http.Redirect(cl.W, cl.R, url, code)
 }
+
+// UpdateSession for a user by extending the expiry.
+func (cl *Client) UpdateSession(username string) {
+	token := GenerateToken(username)
+	cl.SetCookie("token", token)
+	_, err := cl.Conn.Exec(context.Background(), insertSessionSQL, username, token)
+	if err != nil {
+		ll.Msg("Failed to update session: %s", err.Error())
+	}
+}
+
+// UpdateAdminSession by extending the expiry.
+func (cl *Client) UpdateAdminSession(username string) {
+	token := GenerateToken(username)
+	cl.SetCookie("token", token)
+	_, err := cl.Conn.Exec(context.Background(), insertAdminSessionSQL, username, token)
+	if err != nil {
+		ll.Msg("Failed to update admin session: %s", err.Error())
+	}
+}
