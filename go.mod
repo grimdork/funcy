@@ -1,6 +1,7 @@
 module github.com/grimdork/funcy
 
 go 1.22
+toolchain go1.24.1
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.2
@@ -8,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.77.0
 	github.com/grimdork/loglines v1.0.2
 	github.com/jackc/pgx/v5 v5.7.2
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.35.0
 )
 
 require (
