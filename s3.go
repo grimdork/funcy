@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 
+	ll "github.com/grimdork/loglines"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
@@ -18,14 +20,14 @@ func (cl *Client) GetFile(fn string) []byte {
 	})
 
 	if err != nil {
-		cl.Write(err.Error() + "\n")
+		ll.Err("Error loading '%s': %s", fn, err.Error())
 		return nil
 	}
 
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		cl.Write(err.Error() + "\n")
+		ll.Err("Error loading '%s': %s", fn, err.Error())
 		return nil
 	}
 
@@ -41,7 +43,7 @@ func (cl *Client) PutFile(fn string, data []byte) {
 	})
 
 	if err != nil {
-		cl.Write(err.Error() + "\n")
+		ll.Err("Error saving '%s': %s", fn, err.Error())
 		return
 	}
 }
