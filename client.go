@@ -37,7 +37,7 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE"))
 	if err != nil {
 		ll.Msg("Error connecting to database: %s", err.Error())
-		return nil
+		// We'll allow continuing without a database connection.
 	}
 
 	cl.Conn = conn
