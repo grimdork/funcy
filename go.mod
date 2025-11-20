@@ -1,8 +1,6 @@
 module github.com/grimdork/funcy
 
-go 1.23.0
-
-toolchain go1.24.0
+go 1.24.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
@@ -10,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.80.0
 	github.com/grimdork/loglines v1.0.2
 	github.com/jackc/pgx/v5 v5.7.5
-	golang.org/x/crypto v0.38.0
+	golang.org/x/crypto v0.45.0
 )
 
 require (
@@ -32,5 +30,5 @@ require (
 	github.com/grimdork/str v1.0.2 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
 )
