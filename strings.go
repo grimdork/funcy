@@ -16,7 +16,7 @@ const validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567
 // GenerateString of length n.
 func GenerateString(n int) string {
 	s := make([]byte, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(validChars))))
 		if err != nil {
 			return ""
