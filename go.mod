@@ -2,6 +2,8 @@ module github.com/grimdork/funcy
 
 go 1.24.0
 
+toolchain go1.24.13
+
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.6
 	github.com/aws/aws-sdk-go-v2/config v1.32.16
