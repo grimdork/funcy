@@ -1,0 +1,5 @@
+{
+	"go.alternateTools": {
+		"go": "~/go/bin/go1.24.13"
+	}
+}
