@@ -49,6 +49,10 @@ func NewClient(w http.ResponseWriter, r *http.Request) *Client {
 		return nil
 	}
 
-	cl.Client = s3.NewFromConfig(s3cfg)
+	// Pass an option function to disable the flexible checksum validation
+	cl.Client = s3.NewFromConfig(s3cfg, func(o *s3.Options) {
+		o.DisableLogOutputChecksumValidationSkipped = true
+	})
+	// cl.Client = s3.NewFromConfig(s3cfg)
 	return cl
 }
